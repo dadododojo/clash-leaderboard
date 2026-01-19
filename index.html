@@ -83,7 +83,7 @@
             color: white;
             padding: 20px;
             display: grid;
-            grid-template-columns: 60px 1fr 120px 100px 100px 100px;
+            grid-template-columns: 60px 1fr 120px 100px 100px 120px;
             gap: 15px;
             font-weight: 600;
             font-size: 0.9em;
@@ -93,7 +93,7 @@
 
         .player-row {
             display: grid;
-            grid-template-columns: 60px 1fr 120px 100px 100px 100px;
+            grid-template-columns: 60px 1fr 120px 100px 100px 120px;
             gap: 15px;
             padding: 18px 20px;
             border-bottom: 1px solid #f0f0f0;
@@ -239,7 +239,7 @@
                 <div>3⭐ Rate</div>
                 <div>Missed</div>
                 <div class="stat">Wars</div>
-                <div class="stat">Stars</div>
+                <div class="stat">Stars (Avg)</div>
             </div>
             <div id="leaderboard-body">
                 <div class="loading">Loading leaderboard...</div>
@@ -271,8 +271,12 @@
             const numRate = parseFloat(rate);
             if (numRate === 100) {
                 return `<span class="star-rate perfect">💯 ${rate}</span>`;
+            } else if (numRate >= 75) {
+                return `<span class="star-rate">🔥 ${rate}</span>`;
+            } else if (numRate >= 50) {
+                return `<span class="star-rate">⚡ ${rate}</span>`;
             } else {
-                return `<span class="star-rate">⭐ ${rate}</span>`;
+                return `<span class="star-rate">📊 ${rate}</span>`;
             }
         }
 
@@ -329,6 +333,8 @@
                 let html = '';
                 data.players.forEach((player, index) => {
                     const rank = index + 1;
+                    const totalStars = player['Total Stars'];
+                    const avgStars = player['Avg Stars'];
                     html += `
                         <div class="player-row">
                             ${getRankDisplay(rank)}
@@ -339,7 +345,7 @@
                             <div class="stat">${formatStarRate(player['3 Star Rate'])}</div>
                             <div class="stat">${formatMissedHits(player['Missed Hits'])}</div>
                             <div class="stat">${player['Total Wars']}</div>
-                            <div class="stat">${player['Total Stars']} ⭐</div>
+                            <div class="stat">${totalStars} ⭐ <small style="color: #888;">(${avgStars})</small></div>
                         </div>
                     `;
                 });
