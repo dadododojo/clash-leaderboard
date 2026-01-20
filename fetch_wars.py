@@ -18,6 +18,7 @@ HEADERS = {
 EXCEL_FILE = 'clash_wars.xlsx'
 LEADERBOARD_FILE = 'leaderboard.json'
 ROSTER_SHEET_NAME = 'ROSTER'
+MISSED_HITS_SHEET_NAME = 'MISSED_HITS'
 
 def format_tag(tag):
     """Ensure tag starts with #"""
@@ -42,7 +43,6 @@ def get_war_id(war):
     """Generate unique war ID from preparation start time"""
     prep_time = war.get('preparationStartTime', '')
     if not prep_time:
-        # Fallback to end time if no prep time
         prep_time = war.get('endTime', str(datetime.now().timestamp()))
     return prep_time.replace(':', '-').replace('.', '-')
 
@@ -79,7 +79,6 @@ def get_existing_loot_hits(war_id):
         sheet_name = war_id[:31]
         df = pd.read_excel(EXCEL_FILE, sheet_name=sheet_name)
         
-        # Create dictionary of player_tag -> list of attack indices marked as loot
         loot_hits = {}
         for idx, row in df.iterrows():
             player_tag = row['Player Tag']
@@ -99,17 +98,13 @@ def process_war(war, preserve_loot_markings=True):
         return None
     
     war_id = get_war_id(war)
-    
-    # Get existing loot hit markings if preserving
     existing_loot = get_existing_loot_hits(war_id) if preserve_loot_markings else {}
     
-    # Extract war metadata
     war_state = war.get('state', 'unknown')
     end_time = war.get('endTime', 'N/A')
     team_size = war.get('teamSize', 0)
     is_complete = is_war_ended(war)
     
-    # Get clan data
     clan = war.get('clan', {})
     members = clan.get('members', [])
     
@@ -119,12 +114,12 @@ def process_war(war, preserve_loot_markings=True):
         player_tag = member.get('tag', '')
         attacks = member.get('attacks', [])
         
-        # Process each attack separately
         for attack_idx, attack in enumerate(attacks, 1):
             stars = attack.get('stars', 0)
             destruction = attack.get('destructionPercentage', 0)
             
-            # Check if this attack was previously marked as loot
+            is_missed = (stars == 0 and destruction == 0)
+            
             is_loot = False
             if player_tag in existing_loot and attack_idx in existing_loot[player_tag]:
                 is_loot = True
@@ -143,10 +138,10 @@ def process_war(war, preserve_loot_markings=True):
                 'Stars': stars,
                 'Destruction %': destruction,
                 'Is Triple': 'Yes' if stars == 3 else 'No',
+                'Is Missed': 'Yes' if is_missed else 'No',
                 'Is Loot Hit': 'Yes' if is_loot else 'No'
             })
         
-        # If player has no attacks yet, still add them to roster
         if not attacks:
             war_details.append({
                 'War ID': war_id,
@@ -162,6 +157,7 @@ def process_war(war, preserve_loot_markings=True):
                 'Stars': 0,
                 'Destruction %': 0,
                 'Is Triple': 'No',
+                'Is Missed': 'Yes',
                 'Is Loot Hit': 'No'
             })
     
@@ -180,7 +176,6 @@ def save_war_to_excel(war_data):
     war_id = war_data['war_id']
     df = pd.DataFrame(war_data['war_details'])
     
-    # Check if file exists
     if os.path.exists(EXCEL_FILE):
         book = load_workbook(EXCEL_FILE)
     else:
@@ -188,31 +183,25 @@ def save_war_to_excel(war_data):
         if 'Sheet' in book.sheetnames:
             del book['Sheet']
     
-    # Create safe sheet name
     sheet_name = war_id[:31]
     
-    # If sheet exists, remove it (we'll recreate with updated data)
     if sheet_name in book.sheetnames:
         del book[sheet_name]
         print(f"Updating existing war {sheet_name}...")
     else:
         print(f"Creating new war {sheet_name}...")
     
-    # Create new sheet
     ws = book.create_sheet(sheet_name)
     
-    # Write data with formatting
     for r_idx, r in enumerate(dataframe_to_rows(df, index=False, header=True), 1):
         ws.append(r)
         
-        # Format header row
         if r_idx == 1:
             for cell in ws[r_idx]:
                 cell.font = Font(bold=True, color="FFFFFF")
                 cell.fill = PatternFill(start_color="4F81BD", end_color="4F81BD", fill_type="solid")
                 cell.alignment = Alignment(horizontal="center", vertical="center")
     
-    # Auto-adjust column widths
     for column in ws.columns:
         max_length = 0
         column = list(column)
@@ -229,6 +218,78 @@ def save_war_to_excel(war_data):
     print(f"✓ Saved war to Excel")
     return True
 
+def update_missed_hits_sheet():
+    """Create/update a sheet tracking missed attacks"""
+    if not os.path.exists(EXCEL_FILE):
+        print("No war data file found")
+        return
+    
+    book = load_workbook(EXCEL_FILE)
+    all_missed = []
+    
+    for sheet_name in book.sheetnames:
+        if sheet_name in [ROSTER_SHEET_NAME, MISSED_HITS_SHEET_NAME]:
+            continue
+        
+        try:
+            df = pd.read_excel(EXCEL_FILE, sheet_name=sheet_name)
+            
+            if df['War Complete'].iloc[0] != 'Yes':
+                continue
+            
+            if 'Is Missed' not in df.columns:
+                df['Is Missed'] = df.apply(
+                    lambda row: 'Yes' if (row.get('Stars', 0) == 0 and row.get('Destruction %', 0) == 0 and row.get('Attack Number', 0) > 0) else 'No',
+                    axis=1
+                )
+            
+            missed_df = df[df['Is Missed'] == 'Yes'].copy()
+            
+            if not missed_df.empty:
+                missed_df = missed_df[['War ID', 'War End Time', 'Player Name', 'Player Tag', 
+                                      'Town Hall', 'Attack Number', 'Stars', 'Destruction %']]
+                all_missed.append(missed_df)
+        
+        except Exception as e:
+            print(f"Error reading sheet {sheet_name} for missed hits: {e}")
+            continue
+    
+    if not all_missed:
+        print("No missed hits found")
+        return
+    
+    missed_df = pd.concat(all_missed, ignore_index=True)
+    missed_df = missed_df.sort_values(['War End Time', 'Player Name'], ascending=[False, True])
+    
+    if MISSED_HITS_SHEET_NAME in book.sheetnames:
+        del book[MISSED_HITS_SHEET_NAME]
+    
+    ws = book.create_sheet(MISSED_HITS_SHEET_NAME, 1)
+    
+    for r_idx, r in enumerate(dataframe_to_rows(missed_df, index=False, header=True), 1):
+        ws.append(r)
+        
+        if r_idx == 1:
+            for cell in ws[r_idx]:
+                cell.font = Font(bold=True, color="FFFFFF")
+                cell.fill = PatternFill(start_color="DC3545", end_color="DC3545", fill_type="solid")
+                cell.alignment = Alignment(horizontal="center", vertical="center")
+    
+    for column in ws.columns:
+        max_length = 0
+        column = list(column)
+        for cell in column:
+            try:
+                if len(str(cell.value)) > max_length:
+                    max_length = len(cell.value)
+            except:
+                pass
+        adjusted_width = min(max_length + 2, 50)
+        ws.column_dimensions[column[0].column_letter].width = adjusted_width
+    
+    book.save(EXCEL_FILE)
+    print(f"✓ Updated missed hits sheet with {len(missed_df)} missed attacks")
+
 def update_roster_sheet():
     """Create/update a master roster sheet with all players"""
     if not os.path.exists(EXCEL_FILE):
@@ -238,9 +299,8 @@ def update_roster_sheet():
     book = load_workbook(EXCEL_FILE)
     all_players = {}
     
-    # Collect all unique players from all war sheets
     for sheet_name in book.sheetnames:
-        if sheet_name == ROSTER_SHEET_NAME:
+        if sheet_name in [ROSTER_SHEET_NAME, MISSED_HITS_SHEET_NAME]:
             continue
         
         try:
@@ -257,11 +317,9 @@ def update_roster_sheet():
                         'Wars Participated': 0
                     }
                 
-                # Count war participation (only if they attacked)
                 if row.get('Attack Number', 0) > 0:
                     all_players[player_tag]['Wars Participated'] += 1
                 
-                # Update TH level if higher
                 current_th = row.get('Town Hall', 0)
                 if current_th > all_players[player_tag]['Last Seen TH']:
                     all_players[player_tag]['Last Seen TH'] = current_th
@@ -269,24 +327,19 @@ def update_roster_sheet():
             print(f"Error reading sheet {sheet_name}: {e}")
             continue
     
-    # Count total wars from sheet count (excluding roster sheet)
-    total_wars = len([s for s in book.sheetnames if s != ROSTER_SHEET_NAME])
+    total_wars = len([s for s in book.sheetnames if s not in [ROSTER_SHEET_NAME, MISSED_HITS_SHEET_NAME]])
     
     for player in all_players.values():
         player['Total Wars'] = total_wars
     
-    # Create DataFrame and sort by name
     roster_df = pd.DataFrame(list(all_players.values()))
     roster_df = roster_df.sort_values('Player Name')
     
-    # Remove roster sheet if exists
     if ROSTER_SHEET_NAME in book.sheetnames:
         del book[ROSTER_SHEET_NAME]
     
-    # Create new roster sheet at the beginning
     ws = book.create_sheet(ROSTER_SHEET_NAME, 0)
     
-    # Write data
     for r_idx, r in enumerate(dataframe_to_rows(roster_df, index=False, header=True), 1):
         ws.append(r)
         
@@ -296,7 +349,6 @@ def update_roster_sheet():
                 cell.fill = PatternFill(start_color="2E75B5", end_color="2E75B5", fill_type="solid")
                 cell.alignment = Alignment(horizontal="center", vertical="center")
     
-    # Auto-adjust columns
     for column in ws.columns:
         max_length = 0
         column = list(column)
@@ -313,7 +365,7 @@ def update_roster_sheet():
     print(f"✓ Updated roster sheet with {len(all_players)} players")
 
 def calculate_leaderboard(days_filter=None):
-    """Calculate leaderboard statistics from completed wars only, excluding loot hits"""
+    """Calculate leaderboard statistics from completed wars"""
     if not os.path.exists(EXCEL_FILE):
         print("No war data found")
         return None
@@ -327,25 +379,26 @@ def calculate_leaderboard(days_filter=None):
         cutoff_date = datetime.now(timezone.utc) - timedelta(days=days_filter)
     
     for sheet_name in book.sheetnames:
-        if sheet_name == ROSTER_SHEET_NAME:
+        if sheet_name in [ROSTER_SHEET_NAME, MISSED_HITS_SHEET_NAME]:
             continue
         
         try:
             df = pd.read_excel(EXCEL_FILE, sheet_name=sheet_name)
             
-            # Only include COMPLETED wars
             if df['War Complete'].iloc[0] != 'Yes':
                 continue
             
-            # Filter by date if specified
+            if 'Is Missed' not in df.columns:
+                df['Is Missed'] = df.apply(
+                    lambda row: 'Yes' if (row.get('Stars', 0) == 0 and row.get('Destruction %', 0) == 0 and row.get('Attack Number', 0) > 0) else 'No',
+                    axis=1
+                )
+            
             if cutoff_date and 'War End Time' in df.columns:
                 df['War End Time'] = pd.to_datetime(df['War End Time'], utc=True)
                 df = df[df['War End Time'] >= cutoff_date]
             
-            # Exclude loot hits
-            df = df[df['Is Loot Hit'] != 'Yes']
-            
-            # Only count actual attacks (Attack Number > 0)
+            df = df[(df['Is Loot Hit'] != 'Yes') & (df['Is Missed'] != 'Yes')]
             df = df[df['Attack Number'] > 0]
             
             if not df.empty:
@@ -360,70 +413,48 @@ def calculate_leaderboard(days_filter=None):
         print("No completed war data found matching the filter")
         return None
     
-    # Combine all data
     combined_df = pd.concat(all_data, ignore_index=True)
     
-    # Get all players who participated in wars (even if they didn't attack)
-    all_war_participants = combined_df.groupby(['Player Name', 'Player Tag', 'War ID']).size().reset_index()
+    all_war_participants = combined_df[['Player Name', 'Player Tag', 'War ID']].drop_duplicates()
     all_war_participants = all_war_participants.groupby(['Player Name', 'Player Tag']).agg({
         'War ID': 'nunique'
     }).reset_index()
     all_war_participants.columns = ['Player Name', 'Player Tag', 'Total Wars']
     
-    # Calculate attack statistics (only for players who attacked)
     attack_stats = combined_df.groupby(['Player Name', 'Player Tag']).agg({
-        'Stars': 'sum',  # Total stars
-        'Is Triple': lambda x: (x == 'Yes').sum(),  # Count triples
-        'Attack Number': 'count'  # Total attacks (excluding loot)
+        'Stars': 'sum',
+        'Is Triple': lambda x: (x == 'Yes').sum(),
+        'Attack Number': 'count'
     }).reset_index()
     
     attack_stats.columns = ['Player Name', 'Player Tag', 'Total Stars', 
                            'Three Stars', 'Total Attacks']
     
-    # Merge to get all players
     player_stats = all_war_participants.merge(
         attack_stats, 
         on=['Player Name', 'Player Tag'], 
         how='left'
     )
     
-    # Fill NaN values for players who didn't attack
     player_stats['Total Stars'] = player_stats['Total Stars'].fillna(0).astype(int)
     player_stats['Three Stars'] = player_stats['Three Stars'].fillna(0).astype(int)
     player_stats['Total Attacks'] = player_stats['Total Attacks'].fillna(0).astype(int)
     
-    # Calculate missed attacks
-    # Each war = attacksPerMember (usually 2)
-    # We need to get attacks per war from the original data
-    attacks_per_member = 2  # Default
-    if not combined_df.empty and 'Team Size' in combined_df.columns:
-        # Try to find attacksPerMember from war data (it's typically 2)
-        attacks_per_member = 2
-    
-    # Calculate expected attacks = wars * attacks per war
-    player_stats['Expected Attacks'] = player_stats['Total Wars'] * attacks_per_member
-    player_stats['Missed Hits'] = player_stats['Expected Attacks'] - player_stats['Total Attacks']
-    player_stats['Missed Hits'] = player_stats['Missed Hits'].clip(lower=0)
-    
-    # Calculate 3-star rate
     player_stats['3 Star Rate'] = player_stats.apply(
         lambda row: f"{(row['Three Stars'] / row['Total Attacks'] * 100):.1f}%" 
         if row['Total Attacks'] > 0 else "0.0%",
         axis=1
     )
     
-    # Calculate average stars per war
     player_stats['Avg Stars'] = player_stats.apply(
-        lambda row: f"{(row['Total Stars'] / row['Total Wars']):.1f}"
-        if row['Total Wars'] > 0 else "0.0",
+        lambda row: round(row['Total Stars'] / row['Total Wars'], 1)
+        if row['Total Wars'] > 0 else 0.0,
         axis=1
     )
     
-    # Select and reorder columns
     player_stats = player_stats[['Player Name', 'Player Tag', '3 Star Rate', 
-                                'Missed Hits', 'Total Wars', 'Total Stars', 'Avg Stars']]
+                                'Total Wars', 'Total Stars', 'Avg Stars']]
     
-    # Sort by Total Wars, then Total Stars
     player_stats = player_stats.sort_values(['Total Wars', 'Total Stars'], 
                                            ascending=[False, False])
     
@@ -454,7 +485,6 @@ def main():
     print(f"Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print("="*60)
     
-    # Fetch current war
     print("\nFetching current war...")
     war = fetch_current_war()
     
@@ -462,21 +492,18 @@ def main():
         print("Failed to fetch war data")
         return
     
-    # Check war state
     state = war.get('state', 'notInWar')
     print(f"War State: {state}")
     
     if state == 'notInWar':
         print("Clan is not currently in war")
     else:
-        # Check if CWL
         if is_cwl_war(war):
             print("This is a CWL war - skipping (CWL wars are excluded)")
         else:
             war_id = get_war_id(war)
             print(f"War ID: {war_id}")
             
-            # Process the war (now saves incomplete wars too)
             war_data = process_war(war)
             
             if war_data:
@@ -487,10 +514,10 @@ def main():
                 
                 save_war_to_excel(war_data)
                 update_roster_sheet()
+                update_missed_hits_sheet()
             else:
                 print("Error processing war data")
     
-    # Calculate and save leaderboards
     print("\n" + "="*60)
     print("UPDATING LEADERBOARDS (Completed Wars Only)")
     print("="*60)
