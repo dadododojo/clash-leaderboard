@@ -3,3 +3,6 @@ API_KEY = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlY
 
 # Your clan tag
 CLAN_TAG = "#LYJV220Y"
+
+# Add this line to config.py
+DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1463433229389267107/Reskdfg_EKkFvOz-0Lm9naDHeSbhPxfcLU414wVi-4KBSC5nWielRJmP-VMyLV0xSI3u"  # Or leave as "" to disable

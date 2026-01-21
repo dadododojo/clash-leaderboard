@@ -134,6 +134,13 @@
             font-weight: 600;
             font-size: 1.05em;
             color: #333;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .badges {
+            font-size: 0.9em;
         }
 
         .player-tag {
@@ -175,6 +182,27 @@
             margin-top: 20px;
             font-size: 0.9em;
             opacity: 0.8;
+        }
+        
+        .badge-legend {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+            color: white;
+            font-size: 0.85em;
+        }
+        
+        .badge-legend h3 {
+            margin-bottom: 10px;
+            font-size: 1em;
+            opacity: 0.9;
+        }
+        
+        .badge-item {
+            display: inline-block;
+            margin-right: 15px;
+            margin-bottom: 5px;
         }
 
         .no-data {
@@ -246,6 +274,16 @@
         </div>
 
         <div class="last-updated" id="last-updated"></div>
+        
+        <div class="badge-legend">
+            <h3>🏆 Achievements</h3>
+            <div>
+                <span class="badge-item">💯 Perfect (100% 3⭐ rate)</span>
+                <span class="badge-item">🎖️ Veteran (10+ wars)</span>
+                <span class="badge-item">⭐ Star Machine (50+ stars)</span>
+                <span class="badge-item">🔥 Consistent (2.5+ avg/atk)</span>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -333,17 +371,21 @@
                 data.players.forEach((player, index) => {
                     const rank = index + 1;
                     const totalStars = player['Total Stars'];
-                    const avgStars = player['Avg Stars'];
+                    const avgStars = player['Avg Stars Per Attack'];
+                    const badges = player['Badges'] || '';
                     html += `
                         <div class="player-row">
                             ${getRankDisplay(rank)}
                             <div class="player-info">
-                                <div class="player-name">${escapeHtml(player['Player Name'])}</div>
+                                <div class="player-name">
+                                    <span>${escapeHtml(player['Player Name'])}</span>
+                                    ${badges ? `<span class="badges">${badges}</span>` : ''}
+                                </div>
                                 <div class="player-tag">${escapeHtml(player['Player Tag'])}</div>
                             </div>
                             <div class="stat">${formatStarRate(player['3 Star Rate'])}</div>
                             <div class="stat">${player['Total Wars']}</div>
-                            <div class="stat">${totalStars} ⭐ <small style="color: #888;">(${avgStars})</small></div>
+                            <div class="stat">${totalStars} ⭐ <small style="color: #888; font-size: 0.75em;">(${avgStars}/atk)</small></div>
                         </div>
                     `;
                 });

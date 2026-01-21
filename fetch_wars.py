@@ -8,6 +8,12 @@ from openpyxl.utils.dataframe import dataframe_to_rows
 import os
 from config import API_KEY, CLAN_TAG
 
+# Try to import Discord webhook URL (optional)
+try:
+    from config import DISCORD_WEBHOOK_URL
+except ImportError:
+    DISCORD_WEBHOOK_URL = None
+
 # API Configuration
 BASE_URL = "https://api.clashofclans.com/v1"
 HEADERS = {
@@ -364,6 +370,30 @@ def update_roster_sheet():
     book.save(EXCEL_FILE)
     print(f"✓ Updated roster sheet with {len(all_players)} players")
 
+def calculate_badges(row):
+    """Calculate achievement badges for a player"""
+    badges = []
+    
+    # Perfect Record - 100% 3-star rate with 5+ attacks
+    if row['Total Attacks'] >= 5:
+        rate = float(row['3 Star Rate'].rstrip('%'))
+        if rate == 100.0:
+            badges.append('💯')
+    
+    # War Veteran - 10+ wars
+    if row['Total Wars'] >= 10:
+        badges.append('🎖️')
+    
+    # Star Machine - 50+ total stars
+    if row['Total Stars'] >= 50:
+        badges.append('⭐')
+    
+    # Consistent - 5+ wars with 2.5+ avg stars per attack
+    if row['Total Wars'] >= 5 and row['Avg Stars Per Attack'] >= 2.5:
+        badges.append('🔥')
+    
+    return ''.join(badges)
+
 def calculate_leaderboard(days_filter=None):
     """Calculate leaderboard statistics from completed wars"""
     if not os.path.exists(EXCEL_FILE):
@@ -477,6 +507,76 @@ def save_leaderboard_json(leaderboard_data, filename=LEADERBOARD_FILE):
     
     print(f"✓ Saved leaderboard to {filename}")
 
+def send_discord_war_report(war_data, war):
+    """Send war completion report to Discord"""
+    if not DISCORD_WEBHOOK_URL:
+        return
+    
+    try:
+        clan = war.get('clan', {})
+        opponent = war.get('opponent', {})
+        
+        clan_name = clan.get('name', 'Unknown')
+        clan_stars = clan.get('stars', 0)
+        clan_destruction = clan.get('destructionPercentage', 0)
+        
+        opponent_name = opponent.get('name', 'Unknown')
+        opponent_stars = opponent.get('stars', 0)
+        opponent_destruction = opponent.get('destructionPercentage', 0)
+        
+        result = "🏆 VICTORY!" if clan_stars > opponent_stars else ("💔 DEFEAT" if clan_stars < opponent_stars else "🤝 TIE")
+        color = 0x10b981 if clan_stars > opponent_stars else (0xef4444 if clan_stars < opponent_stars else 0xf59e0b)
+        
+        # Find top performers
+        df = pd.DataFrame(war_data['war_details'])
+        df = df[df['Attack Number'] > 0]  # Only actual attacks
+        
+        top_stars = df.nlargest(3, 'Stars')[['Player Name', 'Stars', 'Destruction %']]
+        top_performers = "\n".join([f"⭐ **{row['Player Name']}**: {row['Stars']}⭐ ({row['Destruction %']:.1f}%)" 
+                                    for _, row in top_stars.iterrows()])
+        
+        # Count missed attacks
+        missed_df = df[df['Is Missed'] == 'Yes']
+        missed_count = len(missed_df)
+        
+        embed = {
+            "title": f"{result}",
+            "description": f"**{clan_name}** vs **{opponent_name}**",
+            "color": color,
+            "fields": [
+                {
+                    "name": "📊 Final Score",
+                    "value": f"**{clan_stars}** ⭐ ({clan_destruction:.1f}%) - {opponent_stars} ⭐ ({opponent_destruction:.1f}%)",
+                    "inline": False
+                },
+                {
+                    "name": "🌟 Top Performers",
+                    "value": top_performers if not top_stars.empty else "No data",
+                    "inline": False
+                },
+                {
+                    "name": "❌ Missed Attacks",
+                    "value": f"{missed_count} attack(s) missed" if missed_count > 0 else "✅ No missed attacks!",
+                    "inline": False
+                }
+            ],
+            "timestamp": datetime.now().isoformat(),
+            "footer": {
+                "text": "100% Turtle War Tracker"
+            }
+        }
+        
+        payload = {
+            "embeds": [embed]
+        }
+        
+        response = requests.post(DISCORD_WEBHOOK_URL, json=payload)
+        response.raise_for_status()
+        print("✓ Sent war report to Discord")
+        
+    except Exception as e:
+        print(f"Failed to send Discord report: {e}")
+
 def main():
     print("="*60)
     print("CLASH OF CLANS WAR TRACKER")
@@ -509,12 +609,15 @@ def main():
             if war_data:
                 if war_data['is_ended']:
                     print("War has ENDED - saving complete war data...")
+                    save_war_to_excel(war_data)
+                    update_roster_sheet()
+                    update_missed_hits_sheet()
+                    send_discord_war_report(war_data, war)
                 else:
                     print("War is IN PROGRESS - saving current state...")
-                
-                save_war_to_excel(war_data)
-                update_roster_sheet()
-                update_missed_hits_sheet()
+                    save_war_to_excel(war_data)
+                    update_roster_sheet()
+                    update_missed_hits_sheet()
             else:
                 print("Error processing war data")
     
