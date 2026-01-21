@@ -370,30 +370,6 @@ def update_roster_sheet():
     book.save(EXCEL_FILE)
     print(f"✓ Updated roster sheet with {len(all_players)} players")
 
-def calculate_badges(row):
-    """Calculate achievement badges for a player"""
-    badges = []
-    
-    # Perfect Record - 100% 3-star rate with 5+ attacks
-    if row['Total Attacks'] >= 5:
-        rate = float(row['3 Star Rate'].rstrip('%'))
-        if rate == 100.0:
-            badges.append('💯')
-    
-    # War Veteran - 10+ wars
-    if row['Total Wars'] >= 10:
-        badges.append('🎖️')
-    
-    # Star Machine - 50+ total stars
-    if row['Total Stars'] >= 50:
-        badges.append('⭐')
-    
-    # Consistent - 5+ wars with 2.5+ avg stars per attack
-    if row['Total Wars'] >= 5 and row['Avg Stars Per Attack'] >= 2.5:
-        badges.append('🔥')
-    
-    return ''.join(badges)
-
 def calculate_leaderboard(days_filter=None):
     """Calculate leaderboard statistics from completed wars"""
     if not os.path.exists(EXCEL_FILE):
