@@ -83,7 +83,7 @@
             color: white;
             padding: 20px;
             display: grid;
-            grid-template-columns: 60px 1.8fr 110px 90px 90px 140px;
+            grid-template-columns: 60px 1.8fr 110px 100px 90px 90px;
             gap: 12px;
             font-weight: 600;
             font-size: 0.9em;
@@ -93,7 +93,7 @@
 
         .player-row {
             display: grid;
-            grid-template-columns: 60px 1.8fr 110px 90px 90px 140px;
+            grid-template-columns: 60px 1.8fr 110px 100px 90px 90px;
             gap: 12px;
             padding: 18px 20px;
             border-bottom: 1px solid #f0f0f0;
@@ -237,9 +237,9 @@
                 <div>Rank</div>
                 <div>Player</div>
                 <div>3⭐ Rate</div>
-                <div>Missed</div>
+                <div class="stat">Avg ⭐</div>
                 <div class="stat">Wars</div>
-                <div class="stat">Stars</div>
+                <div class="stat">Missed</div>
             </div>
             <div id="leaderboard-body">
                 <div class="loading">Loading leaderboard...</div>
@@ -333,7 +333,6 @@
                 let html = '';
                 data.players.forEach((player, index) => {
                     const rank = index + 1;
-                    const totalStars = player['Total Stars'];
                     const avgStars = player['Avg Stars Per Attack'] || 0;
                     const missedHits = player['Missed Hits'] || 0;
                     html += `
@@ -344,12 +343,9 @@
                                 <div class="player-tag">${escapeHtml(player['Player Tag'])}</div>
                             </div>
                             <div class="stat">${formatStarRate(player['3 Star Rate'])}</div>
-                            <div class="stat">${formatMissedHits(missedHits)}</div>
+                            <div class="stat">${avgStars} ⭐</div>
                             <div class="stat">${player['Total Wars']}</div>
-                            <div class="stat">
-                                ${totalStars} ⭐
-                                <div style="color: #888; font-size: 0.75em; margin-top: 2px;">${avgStars}/atk</div>
-                            </div>
+                            <div class="stat">${formatMissedHits(missedHits)}</div>
                         </div>
                     `;
                 });
