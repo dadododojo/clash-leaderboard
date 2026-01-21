@@ -452,17 +452,29 @@ def calculate_leaderboard(days_filter=None):
         axis=1
     )
     
-    player_stats['Avg Stars'] = player_stats.apply(
-        lambda row: round(row['Total Stars'] / row['Total Wars'], 1)
-        if row['Total Wars'] > 0 else 0.0,
+    player_stats['Avg Stars Per Attack'] = player_stats.apply(
+        lambda row: round(row['Total Stars'] / row['Total Attacks'], 2)
+        if row['Total Attacks'] > 0 else 0.0,
         axis=1
     )
     
-    player_stats = player_stats[['Player Name', 'Player Tag', '3 Star Rate', 
-                                'Total Wars', 'Total Stars', 'Avg Stars']]
+    print(f"\nDebug - Sample calculations:")
+    if not player_stats.empty:
+        sample = player_stats.head(3)
+        for _, row in sample.iterrows():
+            print(f"{row['Player Name']}: {row['Total Stars']} stars / {row['Total Attacks']} attacks = {row['Avg Stars Per Attack']}")
     
-    player_stats = player_stats.sort_values(['Total Wars', 'Total Stars'], 
+    attacks_per_war = 2
+    player_stats['Expected Attacks'] = player_stats['Total Wars'] * attacks_per_war
+    player_stats['Missed Hits'] = (player_stats['Expected Attacks'] - player_stats['Total Attacks']).clip(lower=0).astype(int)
+    
+    player_stats = player_stats[['Player Name', 'Player Tag', '3 Star Rate', 
+                                'Avg Stars Per Attack', 'Total Wars', 'Missed Hits']]
+    
+    player_stats['_sort_rate'] = player_stats['3 Star Rate'].str.rstrip('%').astype(float)
+    player_stats = player_stats.sort_values(['_sort_rate', 'Total Wars'], 
                                            ascending=[False, False])
+    player_stats = player_stats.drop(columns=['_sort_rate'])
     
     return player_stats
 
@@ -503,15 +515,13 @@ def send_discord_war_report(war_data, war):
         result = "🏆 VICTORY!" if clan_stars > opponent_stars else ("💔 DEFEAT" if clan_stars < opponent_stars else "🤝 TIE")
         color = 0x10b981 if clan_stars > opponent_stars else (0xef4444 if clan_stars < opponent_stars else 0xf59e0b)
         
-        # Find top performers
         df = pd.DataFrame(war_data['war_details'])
-        df = df[df['Attack Number'] > 0]  # Only actual attacks
+        df = df[df['Attack Number'] > 0]
         
         top_stars = df.nlargest(3, 'Stars')[['Player Name', 'Stars', 'Destruction %']]
         top_performers = "\n".join([f"⭐ **{row['Player Name']}**: {row['Stars']}⭐ ({row['Destruction %']:.1f}%)" 
                                     for _, row in top_stars.iterrows()])
         
-        # Count missed attacks
         missed_df = df[df['Is Missed'] == 'Yes']
         missed_count = len(missed_df)
         
