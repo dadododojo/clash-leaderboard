@@ -62,19 +62,26 @@ def is_cwl_war(war):
     return war_league.get('name') != 'Unranked' if war_league else False
 
 def war_already_saved(war_id):
-    """Check if war is already saved in Excel"""
+    """Check if war is already saved in Excel and if it's complete"""
     if not os.path.exists(EXCEL_FILE):
-        return False
+        return False, False
     
     try:
         book = load_workbook(EXCEL_FILE, read_only=True)
         sheet_name = war_id[:31]
         exists = sheet_name in book.sheetnames
+        
+        is_complete = False
+        if exists:
+            df = pd.read_excel(EXCEL_FILE, sheet_name=sheet_name)
+            if not df.empty and 'War Complete' in df.columns:
+                is_complete = df['War Complete'].iloc[0] == 'Yes'
+        
         book.close()
-        return exists
+        return exists, is_complete
     except Exception as e:
         print(f"Error checking existing wars: {e}")
-        return False
+        return False, False
 
 def get_existing_loot_hits(war_id):
     """Get existing loot hit markings for a war if it exists"""
@@ -404,9 +411,6 @@ def calculate_leaderboard(days_filter=None):
                 df['War End Time'] = pd.to_datetime(df['War End Time'], utc=True)
                 df = df[df['War End Time'] >= cutoff_date]
             
-            df = df[(df['Is Loot Hit'] != 'Yes') & (df['Is Missed'] != 'Yes')]
-            df = df[df['Attack Number'] > 0]
-            
             if not df.empty:
                 all_data.append(df)
         except Exception as e:
@@ -419,7 +423,19 @@ def calculate_leaderboard(days_filter=None):
         print("No completed war data found matching the filter")
         return None
     
-    combined_df = pd.concat(all_data, ignore_index=True)
+    # Combine all data BEFORE filtering
+    all_attacks_df = pd.concat(all_data, ignore_index=True)
+    
+    # Calculate missed hits from unfiltered data
+    missed_stats = all_attacks_df[all_attacks_df['Is Missed'] == 'Yes'].groupby(['Player Name', 'Player Tag']).size().reset_index(name='Missed Hits')
+    
+    # Now filter for valid attacks (exclude loot and missed)
+    combined_df = all_attacks_df[(all_attacks_df['Is Loot Hit'] != 'Yes') & (all_attacks_df['Is Missed'] != 'Yes')]
+    combined_df = combined_df[combined_df['Attack Number'] > 0]
+    
+    if combined_df.empty:
+        print("No valid attack data found after filtering")
+        return None
     
     all_war_participants = combined_df[['Player Name', 'Player Tag', 'War ID']].drop_duplicates()
     all_war_participants = all_war_participants.groupby(['Player Name', 'Player Tag']).agg({
@@ -464,16 +480,24 @@ def calculate_leaderboard(days_filter=None):
         for _, row in sample.iterrows():
             print(f"{row['Player Name']}: {row['Total Stars']} stars / {row['Total Attacks']} attacks = {row['Avg Stars Per Attack']}")
     
-    attacks_per_war = 2
-    player_stats['Expected Attacks'] = player_stats['Total Wars'] * attacks_per_war
-    player_stats['Missed Hits'] = (player_stats['Expected Attacks'] - player_stats['Total Attacks']).clip(lower=0).astype(int)
+    # Calculate missed hits - need to check all war data, not just valid attacks
+    # Merge missed hits with player stats
+    player_stats = player_stats.merge(
+        missed_stats,
+        on=['Player Name', 'Player Tag'],
+        how='left'
+    )
+    
+    # Fill NaN with 0 for players with no missed hits
+    player_stats['Missed Hits'] = player_stats['Missed Hits'].fillna(0).astype(int)
     
     player_stats = player_stats[['Player Name', 'Player Tag', '3 Star Rate', 
                                 'Avg Stars Per Attack', 'Total Wars', 'Missed Hits']]
     
+    # Sort by 3 Star Rate (descending), then by Missed Hits (ascending - fewer is better), then by Total Wars
     player_stats['_sort_rate'] = player_stats['3 Star Rate'].str.rstrip('%').astype(float)
-    player_stats = player_stats.sort_values(['_sort_rate', 'Total Wars'], 
-                                           ascending=[False, False])
+    player_stats = player_stats.sort_values(['_sort_rate', 'Missed Hits', 'Total Wars'], 
+                                           ascending=[False, True, False])
     player_stats = player_stats.drop(columns=['_sort_rate'])
     
     return player_stats
@@ -593,7 +617,13 @@ def main():
             war_data = process_war(war)
             
             if war_data:
-                if war_data['is_ended']:
+                war_id = war_data['war_id']
+                exists, is_complete = war_already_saved(war_id)
+                
+                # Don't overwrite completed wars
+                if is_complete:
+                    print(f"War {war_id} is already complete - skipping update")
+                elif war_data['is_ended']:
                     print("War has ENDED - saving complete war data...")
                     save_war_to_excel(war_data)
                     update_roster_sheet()
