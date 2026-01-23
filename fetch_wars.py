@@ -438,11 +438,17 @@ def calculate_leaderboard(days_filter=None):
         (all_attacks_df['Is Missed'] == 'Yes') | (all_attacks_df['Attack Number'] == 0)
     ].copy()
     
-    # For players with Attack Number = 0, they missed ALL their attacks (usually 2 per war)
-    # For players with Attack Number > 0 but Is Missed = Yes, count each missed attack
-    missed_stats = missed_attacks.groupby(['Player Name', 'Player Tag']).apply(
-        lambda x: len(x) if (x['Attack Number'] == 0).any() else (x['Is Missed'] == 'Yes').sum()
-    ).reset_index(name='Missed Hits')
+    # Calculate missed hits: count rows where Is Missed = Yes OR Attack Number = 0 (no attacks at all)
+    # For Attack Number = 0, they get ONE row but missed 2 attacks, so we need to count properly
+    def count_missed(group):
+        if (group['Attack Number'] == 0).any():
+            # Player didn't attack at all - they missed all expected attacks (usually 2)
+            return 2  # Standard attacks per war
+        else:
+            # Count individual missed attacks
+            return (group['Is Missed'] == 'Yes').sum()
+    
+    missed_stats = missed_attacks.groupby(['Player Name', 'Player Tag']).apply(count_missed).reset_index(name='Missed Hits')
     
     # Now filter for valid attacks (exclude loot and missed)
     combined_df = all_attacks_df[(all_attacks_df['Is Loot Hit'] != 'Yes') & (all_attacks_df['Is Missed'] != 'Yes')]
