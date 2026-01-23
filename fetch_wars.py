@@ -117,6 +117,7 @@ def process_war(war, preserve_loot_markings=True):
     end_time = war.get('endTime', 'N/A')
     team_size = war.get('teamSize', 0)
     is_complete = is_war_ended(war)
+    attacks_per_member = war.get('attacksPerMember', 2)
     
     clan = war.get('clan', {})
     members = clan.get('members', [])
@@ -125,16 +126,29 @@ def process_war(war, preserve_loot_markings=True):
     
     for member in members:
         player_tag = member.get('tag', '')
-        attacks = member.get('attacks', [])
+        player_name = member.get('name', '')
+        th_level = member.get('townhallLevel', 0)
+        map_position = member.get('mapPosition', 0)
         
-        for attack_idx, attack in enumerate(attacks, 1):
-            stars = attack.get('stars', 0)
-            destruction = attack.get('destructionPercentage', 0)
-            
-            is_missed = (stars == 0 and destruction == 0)
+        attacks = member.get('attacks', [])
+        attacks_dict = {attack.get('order', i+1): attack for i, attack in enumerate(attacks)}
+        
+        # Pre-populate expected attacks
+        for attack_num in range(1, attacks_per_member + 1):
+            if attack_num in attacks_dict:
+                # Actual attack exists
+                attack = attacks_dict[attack_num]
+                stars = attack.get('stars', 0)
+                destruction = attack.get('destructionPercentage', 0)
+                is_missed = (stars == 0 and destruction == 0)
+            else:
+                # Attack was missed
+                stars = 0
+                destruction = 0
+                is_missed = True
             
             is_loot = False
-            if player_tag in existing_loot and attack_idx in existing_loot[player_tag]:
+            if player_tag in existing_loot and attack_num in existing_loot[player_tag]:
                 is_loot = True
             
             war_details.append({
@@ -143,35 +157,16 @@ def process_war(war, preserve_loot_markings=True):
                 'War Complete': 'Yes' if is_complete else 'No',
                 'War End Time': end_time,
                 'Team Size': team_size,
-                'Player Name': member.get('name', ''),
+                'Player Name': player_name,
                 'Player Tag': player_tag,
-                'Town Hall': member.get('townhallLevel', 0),
-                'Map Position': member.get('mapPosition', 0),
-                'Attack Number': attack_idx,
+                'Town Hall': th_level,
+                'Map Position': map_position,
+                'Attack Number': attack_num,
                 'Stars': stars,
                 'Destruction %': destruction,
                 'Is Triple': 'Yes' if stars == 3 else 'No',
                 'Is Missed': 'Yes' if is_missed else 'No',
                 'Is Loot Hit': 'Yes' if is_loot else 'No'
-            })
-        
-        if not attacks:
-            war_details.append({
-                'War ID': war_id,
-                'War State': war_state,
-                'War Complete': 'Yes' if is_complete else 'No',
-                'War End Time': end_time,
-                'Team Size': team_size,
-                'Player Name': member.get('name', ''),
-                'Player Tag': player_tag,
-                'Town Hall': member.get('townhallLevel', 0),
-                'Map Position': member.get('mapPosition', 0),
-                'Attack Number': 0,
-                'Stars': 0,
-                'Destruction %': 0,
-                'Is Triple': 'No',
-                'Is Missed': 'Yes',
-                'Is Loot Hit': 'No'
             })
     
     return {
@@ -438,21 +433,11 @@ def calculate_leaderboard(days_filter=None):
         (all_attacks_df['Is Missed'] == 'Yes') | (all_attacks_df['Attack Number'] == 0)
     ].copy()
     
-    # Calculate missed hits: count rows where Is Missed = Yes OR Attack Number = 0 (no attacks at all)
-    # For Attack Number = 0, they get ONE row but missed 2 attacks, so we need to count properly
-    def count_missed(group):
-        if (group['Attack Number'] == 0).any():
-            # Player didn't attack at all - they missed all expected attacks (usually 2)
-            return 2  # Standard attacks per war
-        else:
-            # Count individual missed attacks
-            return (group['Is Missed'] == 'Yes').sum()
-    
-    missed_stats = missed_attacks.groupby(['Player Name', 'Player Tag']).apply(count_missed).reset_index(name='Missed Hits')
+    # Calculate missed hits: Now simply count where Is Missed = Yes
+    missed_stats = all_attacks_df[all_attacks_df['Is Missed'] == 'Yes'].groupby(['Player Name', 'Player Tag']).size().reset_index(name='Missed Hits')
     
     # Now filter for valid attacks (exclude loot and missed)
     combined_df = all_attacks_df[(all_attacks_df['Is Loot Hit'] != 'Yes') & (all_attacks_df['Is Missed'] != 'Yes')]
-    combined_df = combined_df[combined_df['Attack Number'] > 0]
     
     if combined_df.empty:
         print("No valid attack data found after filtering")
@@ -514,7 +499,14 @@ def calculate_leaderboard(days_filter=None):
     # Fill NaN with 0 for players with no missed hits
     player_stats['Missed Hits'] = player_stats['Missed Hits'].fillna(0).astype(int)
     
-    player_stats = player_stats[['Player Name', 'Player Tag', '3 Star Rate', 
+    # Get TH levels for each player (take the max TH seen)
+    th_levels = all_attacks_df.groupby(['Player Name', 'Player Tag'])['Town Hall'].max().reset_index()
+    
+    # Merge TH levels with player stats
+    player_stats = player_stats.merge(th_levels, on=['Player Name', 'Player Tag'], how='left')
+    player_stats['Town Hall'] = player_stats['Town Hall'].fillna(0).astype(int)
+    
+    player_stats = player_stats[['Player Name', 'Player Tag', 'Town Hall', '3 Star Rate', 
                                 'Avg Stars Per Attack', 'Total Wars', 'Total Stars', 'Missed Hits']]
     
     # Sort by 3 Star Rate (descending), then by Missed Hits (ascending - fewer is better), then by Total Wars

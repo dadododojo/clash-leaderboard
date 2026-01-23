@@ -134,6 +134,15 @@
             font-weight: 600;
             font-size: 1.05em;
             color: #333;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .th-icon {
+            width: 24px;
+            height: 24px;
+            object-fit: contain;
         }
 
         .player-tag {
@@ -333,11 +342,17 @@
                     const avgStars = player['Avg Stars Per Attack'] || 0;
                     const totalStars = player['Total Stars'] || 0;
                     const missedHits = player['Missed Hits'] || 0;
+                    const thLevel = player['Town Hall'] || 0;
+                    const thIcon = thLevel > 0 ? `<img src="th_icons/th${thLevel}.png" alt="TH${thLevel}" class="th-icon">` : '';
+                    
                     html += `
                         <div class="player-row">
                             ${getRankDisplay(rank)}
                             <div class="player-info">
-                                <div class="player-name">${escapeHtml(player['Player Name'])}</div>
+                                <div class="player-name">
+                                    ${thIcon}
+                                    <span>${escapeHtml(player['Player Name'])}</span>
+                                </div>
                                 <div class="player-tag">${escapeHtml(player['Player Tag'])}</div>
                             </div>
                             <div class="stat">${formatStarRate(player['3 Star Rate'])}</div>
