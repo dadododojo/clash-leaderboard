@@ -426,8 +426,23 @@ def calculate_leaderboard(days_filter=None):
     # Combine all data BEFORE filtering
     all_attacks_df = pd.concat(all_data, ignore_index=True)
     
-    # Calculate missed hits from unfiltered data
-    missed_stats = all_attacks_df[all_attacks_df['Is Missed'] == 'Yes'].groupby(['Player Name', 'Player Tag']).size().reset_index(name='Missed Hits')
+    # Get all players who participated in wars (from roster, not just attacks)
+    all_war_participants_full = all_attacks_df[['Player Name', 'Player Tag', 'War ID']].drop_duplicates()
+    war_participation = all_war_participants_full.groupby(['Player Name', 'Player Tag']).agg({
+        'War ID': 'nunique'
+    }).reset_index()
+    war_participation.columns = ['Player Name', 'Player Tag', 'Total Wars']
+    
+    # Calculate missed hits: count rows where Is Missed = Yes OR Attack Number = 0 (no attacks at all)
+    missed_attacks = all_attacks_df[
+        (all_attacks_df['Is Missed'] == 'Yes') | (all_attacks_df['Attack Number'] == 0)
+    ].copy()
+    
+    # For players with Attack Number = 0, they missed ALL their attacks (usually 2 per war)
+    # For players with Attack Number > 0 but Is Missed = Yes, count each missed attack
+    missed_stats = missed_attacks.groupby(['Player Name', 'Player Tag']).apply(
+        lambda x: len(x) if (x['Attack Number'] == 0).any() else (x['Is Missed'] == 'Yes').sum()
+    ).reset_index(name='Missed Hits')
     
     # Now filter for valid attacks (exclude loot and missed)
     combined_df = all_attacks_df[(all_attacks_df['Is Loot Hit'] != 'Yes') & (all_attacks_df['Is Missed'] != 'Yes')]
@@ -437,12 +452,13 @@ def calculate_leaderboard(days_filter=None):
         print("No valid attack data found after filtering")
         return None
     
+    # Get all players who participated (including those who didn't attack)
     all_war_participants = combined_df[['Player Name', 'Player Tag', 'War ID']].drop_duplicates()
-    all_war_participants = all_war_participants.groupby(['Player Name', 'Player Tag']).agg({
-        'War ID': 'nunique'
-    }).reset_index()
-    all_war_participants.columns = ['Player Name', 'Player Tag', 'Total Wars']
     
+    # Merge with full war participation to include people who didn't attack at all
+    all_war_participants = war_participation.copy()
+    
+    # Calculate attack statistics (only for players who attacked - excluding missed and loot)
     attack_stats = combined_df.groupby(['Player Name', 'Player Tag']).agg({
         'Stars': 'sum',
         'Is Triple': lambda x: (x == 'Yes').sum(),
@@ -452,7 +468,8 @@ def calculate_leaderboard(days_filter=None):
     attack_stats.columns = ['Player Name', 'Player Tag', 'Total Stars', 
                            'Three Stars', 'Total Attacks']
     
-    player_stats = all_war_participants.merge(
+    # Merge with war participation (which includes everyone in the war)
+    player_stats = war_participation.merge(
         attack_stats, 
         on=['Player Name', 'Player Tag'], 
         how='left'
@@ -492,7 +509,7 @@ def calculate_leaderboard(days_filter=None):
     player_stats['Missed Hits'] = player_stats['Missed Hits'].fillna(0).astype(int)
     
     player_stats = player_stats[['Player Name', 'Player Tag', '3 Star Rate', 
-                                'Avg Stars Per Attack', 'Total Wars', 'Missed Hits']]
+                                'Avg Stars Per Attack', 'Total Wars', 'Total Stars', 'Missed Hits']]
     
     # Sort by 3 Star Rate (descending), then by Missed Hits (ascending - fewer is better), then by Total Wars
     player_stats['_sort_rate'] = player_stats['3 Star Rate'].str.rstrip('%').astype(float)

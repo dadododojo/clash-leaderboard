@@ -250,10 +250,9 @@
     </div>
 
     <script>
-        const API_BASE = './'; // Assuming JSON files are in the same directory
+        const API_BASE = './';
         let currentPeriod = 'all';
 
-        // Filter button handling
         document.querySelectorAll('.filter-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -324,16 +323,15 @@
                     return;
                 }
 
-                // Update last updated time
                 const lastUpdated = new Date(data.last_updated);
                 document.getElementById('last-updated').textContent = 
                     `Last updated: ${lastUpdated.toLocaleString()}`;
 
-                // Build leaderboard HTML
                 let html = '';
                 data.players.forEach((player, index) => {
                     const rank = index + 1;
                     const avgStars = player['Avg Stars Per Attack'] || 0;
+                    const totalStars = player['Total Stars'] || 0;
                     const missedHits = player['Missed Hits'] || 0;
                     html += `
                         <div class="player-row">
@@ -343,7 +341,10 @@
                                 <div class="player-tag">${escapeHtml(player['Player Tag'])}</div>
                             </div>
                             <div class="stat">${formatStarRate(player['3 Star Rate'])}</div>
-                            <div class="stat">${avgStars} ⭐</div>
+                            <div class="stat">
+                                ${avgStars} ⭐
+                                <div style="color: #999; font-size: 0.7em; margin-top: 2px;">${totalStars} total</div>
+                            </div>
                             <div class="stat">${player['Total Wars']}</div>
                             <div class="stat">${formatMissedHits(missedHits)}</div>
                         </div>
@@ -365,10 +366,7 @@
             return div.innerHTML;
         }
 
-        // Load leaderboard on page load
         loadLeaderboard();
-
-        // Auto-refresh every 5 minutes
         setInterval(loadLeaderboard, 5 * 60 * 1000);
     </script>
 </body>
