@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-04-20T19:00:11.802516",
+  "last_updated": "2026-04-20T19:10:12.023573",
   "players": [
     {
       "Player Name": "WH: Wazza",
@@ -17,9 +17,9 @@
       "Town Hall": 18,
       "3 Star Rate": "100.0%",
       "Avg Stars Per Attack": 3.0,
-      "Total Wars": 6,
+      "Total Wars": 7,
       "Total Stars": 9,
-      "Missed Hits": 9
+      "Missed Hits": 11
     },
     {
       "Player Name": "Azend",
@@ -27,9 +27,9 @@
       "Town Hall": 16,
       "3 Star Rate": "100.0%",
       "Avg Stars Per Attack": 3.0,
-      "Total Wars": 5,
+      "Total Wars": 6,
       "Total Stars": 3,
-      "Missed Hits": 9
+      "Missed Hits": 11
     },
     {
       "Player Name": "100% Outlaw",
@@ -37,14 +37,34 @@
       "Town Hall": 18,
       "3 Star Rate": "100.0%",
       "Avg Stars Per Attack": 3.0,
-      "Total Wars": 6,
+      "Total Wars": 7,
       "Total Stars": 3,
-      "Missed Hits": 11
+      "Missed Hits": 13
+    },
+    {
+      "Player Name": "Blair_Sparky",
+      "Player Tag": "#QQLL0RUP8",
+      "Town Hall": 17,
+      "3 Star Rate": "100.0%",
+      "Avg Stars Per Attack": 3.0,
+      "Total Wars": 7,
+      "Total Stars": 3,
+      "Missed Hits": 13
     },
     {
       "Player Name": "Hame",
       "Player Tag": "#QRYJ9V99",
       "Town Hall": 18,
+      "3 Star Rate": "0.0%",
+      "Avg Stars Per Attack": 0.0,
+      "Total Wars": 1,
+      "Total Stars": 0,
+      "Missed Hits": 2
+    },
+    {
+      "Player Name": "MORNING \u2764\ufe0f JESS",
+      "Player Tag": "#2JQR2L9VQ",
+      "Town Hall": 17,
       "3 Star Rate": "0.0%",
       "Avg Stars Per Attack": 0.0,
       "Total Wars": 1,
@@ -72,36 +92,6 @@
       "Missed Hits": 2
     },
     {
-      "Player Name": "al lasky",
-      "Player Tag": "#YP9JUC9V",
-      "Town Hall": 18,
-      "3 Star Rate": "0.0%",
-      "Avg Stars Per Attack": 0.0,
-      "Total Wars": 1,
-      "Total Stars": 0,
-      "Missed Hits": 2
-    },
-    {
-      "Player Name": "100% Meli",
-      "Player Tag": "#99QUJCCYJ",
-      "Town Hall": 18,
-      "3 Star Rate": "0.0%",
-      "Avg Stars Per Attack": 0.0,
-      "Total Wars": 2,
-      "Total Stars": 0,
-      "Missed Hits": 4
-    },
-    {
-      "Player Name": "GGiNoBBiiLLi20!",
-      "Player Tag": "#PJQ9GRJQ",
-      "Town Hall": 18,
-      "3 Star Rate": "0.0%",
-      "Avg Stars Per Attack": 0.0,
-      "Total Wars": 2,
-      "Total Stars": 0,
-      "Missed Hits": 4
-    },
-    {
       "Player Name": "MR_MORNINGSTARR",
       "Player Tag": "#P9PP80V20",
       "Town Hall": 18,
@@ -122,6 +112,16 @@
       "Missed Hits": 4
     },
     {
+      "Player Name": "al lasky",
+      "Player Tag": "#YP9JUC9V",
+      "Town Hall": 18,
+      "3 Star Rate": "0.0%",
+      "Avg Stars Per Attack": 0.0,
+      "Total Wars": 2,
+      "Total Stars": 0,
+      "Missed Hits": 4
+    },
+    {
       "Player Name": "manletbearpig",
       "Player Tag": "#UJGL0YC0",
       "Town Hall": 18,
@@ -130,6 +130,26 @@
       "Total Wars": 2,
       "Total Stars": 0,
       "Missed Hits": 4
+    },
+    {
+      "Player Name": "100% Meli",
+      "Player Tag": "#99QUJCCYJ",
+      "Town Hall": 18,
+      "3 Star Rate": "0.0%",
+      "Avg Stars Per Attack": 0.0,
+      "Total Wars": 3,
+      "Total Stars": 0,
+      "Missed Hits": 6
+    },
+    {
+      "Player Name": "GGiNoBBiiLLi20!",
+      "Player Tag": "#PJQ9GRJQ",
+      "Town Hall": 18,
+      "3 Star Rate": "0.0%",
+      "Avg Stars Per Attack": 0.0,
+      "Total Wars": 3,
+      "Total Stars": 0,
+      "Missed Hits": 6
     },
     {
       "Player Name": "Juicy?",
@@ -152,38 +172,8 @@
       "Missed Hits": 6
     },
     {
-      "Player Name": "Mr Owl",
-      "Player Tag": "#LQ8CU8GPU",
-      "Town Hall": 17,
-      "3 Star Rate": "0.0%",
-      "Avg Stars Per Attack": 0.0,
-      "Total Wars": 3,
-      "Total Stars": 0,
-      "Missed Hits": 6
-    },
-    {
-      "Player Name": "i love mums",
-      "Player Tag": "#2QGCL8PG",
-      "Town Hall": 17,
-      "3 Star Rate": "0.0%",
-      "Avg Stars Per Attack": 0.0,
-      "Total Wars": 3,
-      "Total Stars": 0,
-      "Missed Hits": 6
-    },
-    {
       "Player Name": "manbearpig",
       "Player Tag": "#RV2YPUQ",
-      "Town Hall": 18,
-      "3 Star Rate": "0.0%",
-      "Avg Stars Per Attack": 0.0,
-      "Total Wars": 3,
-      "Total Stars": 0,
-      "Missed Hits": 6
-    },
-    {
-      "Player Name": "neuro",
-      "Player Tag": "#9YYR888YQ",
       "Town Hall": 18,
       "3 Star Rate": "0.0%",
       "Avg Stars Per Attack": 0.0,
@@ -202,26 +192,6 @@
       "Missed Hits": 6
     },
     {
-      "Player Name": "100% Aus Chaos",
-      "Player Tag": "#LR8J9YRY",
-      "Town Hall": 18,
-      "3 Star Rate": "0.0%",
-      "Avg Stars Per Attack": 0.0,
-      "Total Wars": 4,
-      "Total Stars": 0,
-      "Missed Hits": 8
-    },
-    {
-      "Player Name": "Anon",
-      "Player Tag": "#2VRP9CJY",
-      "Town Hall": 18,
-      "3 Star Rate": "0.0%",
-      "Avg Stars Per Attack": 0.0,
-      "Total Wars": 4,
-      "Total Stars": 0,
-      "Missed Hits": 8
-    },
-    {
       "Player Name": "Juicy!",
       "Player Tag": "#2Q908JL8C",
       "Town Hall": 18,
@@ -232,8 +202,18 @@
       "Missed Hits": 8
     },
     {
-      "Player Name": "LittleSinn",
-      "Player Tag": "#YGV99UU",
+      "Player Name": "Maximus",
+      "Player Tag": "#8Y9J09LQ8",
+      "Town Hall": 18,
+      "3 Star Rate": "0.0%",
+      "Avg Stars Per Attack": 0.0,
+      "Total Wars": 4,
+      "Total Stars": 0,
+      "Missed Hits": 8
+    },
+    {
+      "Player Name": "Mr Owl",
+      "Player Tag": "#LQ8CU8GPU",
       "Town Hall": 17,
       "3 Star Rate": "0.0%",
       "Avg Stars Per Attack": 0.0,
@@ -242,8 +222,18 @@
       "Missed Hits": 8
     },
     {
-      "Player Name": "Maximus",
-      "Player Tag": "#8Y9J09LQ8",
+      "Player Name": "i love mums",
+      "Player Tag": "#2QGCL8PG",
+      "Town Hall": 17,
+      "3 Star Rate": "0.0%",
+      "Avg Stars Per Attack": 0.0,
+      "Total Wars": 4,
+      "Total Stars": 0,
+      "Missed Hits": 8
+    },
+    {
+      "Player Name": "neuro",
+      "Player Tag": "#9YYR888YQ",
       "Town Hall": 18,
       "3 Star Rate": "0.0%",
       "Avg Stars Per Attack": 0.0,
@@ -272,8 +262,8 @@
       "Missed Hits": 8
     },
     {
-      "Player Name": "DEADSHOT 112830",
-      "Player Tag": "#PUUV8V08V",
+      "Player Name": "100% Aus Chaos",
+      "Player Tag": "#LR8J9YRY",
       "Town Hall": 18,
       "3 Star Rate": "0.0%",
       "Avg Stars Per Attack": 0.0,
@@ -282,8 +272,8 @@
       "Missed Hits": 10
     },
     {
-      "Player Name": "\u00ab#PATRICK#\u00bb",
-      "Player Tag": "#8R8R0GL9",
+      "Player Name": "Anon",
+      "Player Tag": "#2VRP9CJY",
       "Town Hall": 18,
       "3 Star Rate": "0.0%",
       "Avg Stars Per Attack": 0.0,
@@ -292,14 +282,14 @@
       "Missed Hits": 10
     },
     {
-      "Player Name": "Berto",
-      "Player Tag": "#LQPRP28P8",
-      "Town Hall": 18,
+      "Player Name": "LittleSinn",
+      "Player Tag": "#YGV99UU",
+      "Town Hall": 17,
       "3 Star Rate": "0.0%",
-      "Avg Stars Per Attack": 2.0,
-      "Total Wars": 6,
-      "Total Stars": 2,
-      "Missed Hits": 11
+      "Avg Stars Per Attack": 0.0,
+      "Total Wars": 5,
+      "Total Stars": 0,
+      "Missed Hits": 10
     },
     {
       "Player Name": "100% OZI",
@@ -312,14 +302,44 @@
       "Missed Hits": 12
     },
     {
-      "Player Name": "100% Titan",
-      "Player Tag": "#YJVLJG8U",
+      "Player Name": "DEADSHOT 112830",
+      "Player Tag": "#PUUV8V08V",
       "Town Hall": 18,
       "3 Star Rate": "0.0%",
       "Avg Stars Per Attack": 0.0,
       "Total Wars": 6,
       "Total Stars": 0,
       "Missed Hits": 12
+    },
+    {
+      "Player Name": "\u00ab#PATRICK#\u00bb",
+      "Player Tag": "#8R8R0GL9",
+      "Town Hall": 18,
+      "3 Star Rate": "0.0%",
+      "Avg Stars Per Attack": 0.0,
+      "Total Wars": 6,
+      "Total Stars": 0,
+      "Missed Hits": 12
+    },
+    {
+      "Player Name": "Berto",
+      "Player Tag": "#LQPRP28P8",
+      "Town Hall": 18,
+      "3 Star Rate": "0.0%",
+      "Avg Stars Per Attack": 2.0,
+      "Total Wars": 7,
+      "Total Stars": 2,
+      "Missed Hits": 13
+    },
+    {
+      "Player Name": "100% Titan",
+      "Player Tag": "#YJVLJG8U",
+      "Town Hall": 18,
+      "3 Star Rate": "0.0%",
+      "Avg Stars Per Attack": 0.0,
+      "Total Wars": 7,
+      "Total Stars": 0,
+      "Missed Hits": 14
     },
     {
       "Player Name": "100% dadeux",
@@ -327,9 +347,9 @@
       "Town Hall": 18,
       "3 Star Rate": "0.0%",
       "Avg Stars Per Attack": 0.0,
-      "Total Wars": 6,
+      "Total Wars": 7,
       "Total Stars": 0,
-      "Missed Hits": 12
+      "Missed Hits": 14
     },
     {
       "Player Name": "100% dado",
@@ -337,9 +357,9 @@
       "Town Hall": 18,
       "3 Star Rate": "0.0%",
       "Avg Stars Per Attack": 0.0,
-      "Total Wars": 6,
+      "Total Wars": 7,
       "Total Stars": 0,
-      "Missed Hits": 12
+      "Missed Hits": 14
     },
     {
       "Player Name": "Ber2to",
@@ -347,19 +367,9 @@
       "Town Hall": 18,
       "3 Star Rate": "0.0%",
       "Avg Stars Per Attack": 0.0,
-      "Total Wars": 6,
+      "Total Wars": 7,
       "Total Stars": 0,
-      "Missed Hits": 12
-    },
-    {
-      "Player Name": "Blair_Sparky",
-      "Player Tag": "#QQLL0RUP8",
-      "Town Hall": 17,
-      "3 Star Rate": "0.0%",
-      "Avg Stars Per Attack": 0.0,
-      "Total Wars": 6,
-      "Total Stars": 0,
-      "Missed Hits": 12
+      "Missed Hits": 14
     },
     {
       "Player Name": "BlueberyPancake",
@@ -367,9 +377,9 @@
       "Town Hall": 18,
       "3 Star Rate": "0.0%",
       "Avg Stars Per Attack": 0.0,
-      "Total Wars": 6,
+      "Total Wars": 7,
       "Total Stars": 0,
-      "Missed Hits": 12
+      "Missed Hits": 14
     },
     {
       "Player Name": "Devil",
@@ -377,9 +387,9 @@
       "Town Hall": 18,
       "3 Star Rate": "0.0%",
       "Avg Stars Per Attack": 0.0,
-      "Total Wars": 6,
+      "Total Wars": 7,
       "Total Stars": 0,
-      "Missed Hits": 12
+      "Missed Hits": 14
     },
     {
       "Player Name": "EvlGniz",
@@ -387,9 +397,9 @@
       "Town Hall": 18,
       "3 Star Rate": "0.0%",
       "Avg Stars Per Attack": 0.0,
-      "Total Wars": 6,
+      "Total Wars": 7,
       "Total Stars": 0,
-      "Missed Hits": 12
+      "Missed Hits": 14
     },
     {
       "Player Name": "Frodo",
@@ -397,9 +407,9 @@
       "Town Hall": 18,
       "3 Star Rate": "0.0%",
       "Avg Stars Per Attack": 0.0,
-      "Total Wars": 6,
+      "Total Wars": 7,
       "Total Stars": 0,
-      "Missed Hits": 12
+      "Missed Hits": 14
     },
     {
       "Player Name": "Innersinn",
@@ -407,9 +417,9 @@
       "Town Hall": 18,
       "3 Star Rate": "0.0%",
       "Avg Stars Per Attack": 0.0,
-      "Total Wars": 6,
+      "Total Wars": 7,
       "Total Stars": 0,
-      "Missed Hits": 12
+      "Missed Hits": 14
     },
     {
       "Player Name": "John",
@@ -417,9 +427,9 @@
       "Town Hall": 18,
       "3 Star Rate": "0.0%",
       "Avg Stars Per Attack": 0.0,
-      "Total Wars": 6,
+      "Total Wars": 7,
       "Total Stars": 0,
-      "Missed Hits": 12
+      "Missed Hits": 14
     },
     {
       "Player Name": "Kronzy",
@@ -427,9 +437,9 @@
       "Town Hall": 18,
       "3 Star Rate": "0.0%",
       "Avg Stars Per Attack": 0.0,
-      "Total Wars": 6,
+      "Total Wars": 7,
       "Total Stars": 0,
-      "Missed Hits": 12
+      "Missed Hits": 14
     },
     {
       "Player Name": "NISHANT 2.O",
@@ -437,9 +447,9 @@
       "Town Hall": 18,
       "3 Star Rate": "0.0%",
       "Avg Stars Per Attack": 0.0,
-      "Total Wars": 6,
+      "Total Wars": 7,
       "Total Stars": 0,
-      "Missed Hits": 12
+      "Missed Hits": 14
     },
     {
       "Player Name": "TN \u2022 Raiden",
@@ -447,9 +457,9 @@
       "Town Hall": 18,
       "3 Star Rate": "0.0%",
       "Avg Stars Per Attack": 0.0,
-      "Total Wars": 6,
+      "Total Wars": 7,
       "Total Stars": 0,
-      "Missed Hits": 12
+      "Missed Hits": 14
     },
     {
       "Player Name": "UNKNOWN MESMIN",
@@ -457,9 +467,9 @@
       "Town Hall": 18,
       "3 Star Rate": "0.0%",
       "Avg Stars Per Attack": 0.0,
-      "Total Wars": 6,
+      "Total Wars": 7,
       "Total Stars": 0,
-      "Missed Hits": 12
+      "Missed Hits": 14
     },
     {
       "Player Name": "abhi",
@@ -467,9 +477,9 @@
       "Town Hall": 18,
       "3 Star Rate": "0.0%",
       "Avg Stars Per Attack": 0.0,
-      "Total Wars": 6,
+      "Total Wars": 7,
       "Total Stars": 0,
-      "Missed Hits": 12
+      "Missed Hits": 14
     },
     {
       "Player Name": "acowboy7",
@@ -477,9 +487,9 @@
       "Town Hall": 18,
       "3 Star Rate": "0.0%",
       "Avg Stars Per Attack": 0.0,
-      "Total Wars": 6,
+      "Total Wars": 7,
       "Total Stars": 0,
-      "Missed Hits": 12
+      "Missed Hits": 14
     },
     {
       "Player Name": "murph",
@@ -487,9 +497,9 @@
       "Town Hall": 18,
       "3 Star Rate": "0.0%",
       "Avg Stars Per Attack": 0.0,
-      "Total Wars": 6,
+      "Total Wars": 7,
       "Total Stars": 0,
-      "Missed Hits": 12
+      "Missed Hits": 14
     },
     {
       "Player Name": "platypus",
@@ -497,9 +507,9 @@
       "Town Hall": 18,
       "3 Star Rate": "0.0%",
       "Avg Stars Per Attack": 0.0,
-      "Total Wars": 6,
+      "Total Wars": 7,
       "Total Stars": 0,
-      "Missed Hits": 12
+      "Missed Hits": 14
     }
   ]
 }
